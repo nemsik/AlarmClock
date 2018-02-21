@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
         context = getApplicationContext();
         buttSetAlarm = (Button)findViewById(R.id.button);
 
+
         c = Calendar.getInstance();
 
         alarmsList = new ArrayList();

@@ -89,7 +89,7 @@ public class Alarm {
             days.add(c.get(Calendar.DAY_OF_WEEK));
 
             time = c.getTimeInMillis();
-            alarmManager.set(AlarmManager.RTC_WAKEUP, time, pi);
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, time, pi);
 
             /*
             date = new Date();
@@ -126,7 +126,7 @@ public class Alarm {
                 intent.putExtra("TIME", time);
                 pi = PendingIntent.getBroadcast(this.context, requestcode, intent, 0);
                 pendingIntents.add(pi);
-                if(!repeat) alarmManager.set(AlarmManager.RTC_WAKEUP, time, pi);
+                if(!repeat) alarmManager.setExact(AlarmManager.RTC_WAKEUP, time, pi);
                 else alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, time, AlarmManager.INTERVAL_DAY*7, pi);
             }
         }
@@ -147,6 +147,7 @@ public class Alarm {
         if(days!=0) builder.append(days).append(" day(s) ");
         if (hours!=0) builder.append(hours).append(" hour(s) ");
         if (minutes!=0) builder.append(minutes).append(" minute(s)");
+        if(days==0 && hours==0 && minutes==0) builder.append("less than a minute");
 
         Toast.makeText(context, builder.toString(), Toast.LENGTH_LONG).show();
 

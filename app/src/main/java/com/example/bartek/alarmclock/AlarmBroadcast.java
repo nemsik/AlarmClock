@@ -1,9 +1,11 @@
 package com.example.bartek.alarmclock;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.PowerManager;
+import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -21,7 +23,7 @@ public class AlarmBroadcast extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "");
+        PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "wake_up");
         wl.acquire();
 
 
@@ -34,6 +36,15 @@ public class AlarmBroadcast extends BroadcastReceiver {
         Log.d("ALARM BROADCAST REQ ", ""+req);
         Log.d("Alarm BROADCAST DATE ", date.toString());
 
+
+        /*
+        W jaki sposób wyświetlić ten dialog?
+
+
+        AlarmAlertDialog alarmAlertDialog = new AlarmAlertDialog();
+        alarmAlertDialog.show();
+
+        */
         wl.release();
     }
 }
