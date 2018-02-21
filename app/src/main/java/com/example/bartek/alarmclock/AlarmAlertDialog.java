@@ -16,28 +16,28 @@ import android.view.View;
  * Created by bartek on 21.02.2018.
  */
 
-public class AlarmAlertDialog extends AppCompatDialogFragment {
+public class AlarmAlertDialog extends Activity {
 
 
     @Override
-    public Dialog onCreateDialog (Bundle savedInstanceState) {
-        //super.onCreate(savedInstanceState);
+    public void onCreate (Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-        AlertDialog.Builder alarmAlertDialog = new AlertDialog.Builder(getContext());
-        LayoutInflater inflater = getActivity().getLayoutInflater();
-        View view = inflater.inflate(R.layout.alarm_dialog_alert, null);
+        setContentView(R.layout.alarm_dialog_alert);
 
+        AlertDialog.Builder alarmAlertDialog = new AlertDialog.Builder(AlarmAlertDialog.this);
         alarmAlertDialog.setTitle("ALARM!").setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
+                finishActivity(0);
 
             }
         }).setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-
+                finishActivity(0);
             }
         });
-        return alarmAlertDialog.create();
+        alarmAlertDialog.show();
     }
 }

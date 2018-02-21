@@ -45,6 +45,10 @@ public class AlarmBroadcast extends BroadcastReceiver {
         alarmAlertDialog.show();
 
         */
+
+        Intent mintent = new Intent(context, AlarmAlertDialog.class);
+        mintent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(mintent);
         wl.release();
     }
 }
