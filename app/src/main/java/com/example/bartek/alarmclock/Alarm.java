@@ -3,8 +3,11 @@ package com.example.bartek.alarmclock;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.PowerManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -32,6 +35,7 @@ public class Alarm {
     private Date date;
     private Boolean repeat;
     private long difftime;
+    private BroadcastReceiver broadcastReceiver;
 
     public Alarm(Context context, int id, int hour, int minute, int requestcode, boolean isenabled, ArrayList<Integer> days, boolean repeat) {
         this.context = context;
@@ -47,13 +51,40 @@ public class Alarm {
         this.days = days;
         this.repeat = repeat;
         this.id = id;
+
     }
 
-    public void setAlarm(){
+    public void setAlarm() {
+        broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+                PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "wake_up");
+                wl.acquire();
 
-        alarmManager=(AlarmManager)this.context.getSystemService(Context.ALARM_SERVICE);
 
-        if(c.getTimeInMillis() < Calendar.getInstance().getTimeInMillis()) {
+                Toast.makeText(context, "Alarm !!!!!!!!!!", Toast.LENGTH_LONG).show(); // For example
+
+                int req = intent.getIntExtra("REQUESTCODE", -1);
+                long time2 = intent.getLongExtra("TIME", -1);
+                date = new Date();
+                date.setTime(time2);
+                Log.d("ALARM BROADCAST REQ ", "" + req);
+                Log.d("Alarm BROADCAST DATE ", date.toString());
+
+                Intent mintent = new Intent(context, AlarmAlertDialog.class);
+                mintent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(mintent);
+                wl.release();
+            }
+        };
+
+        context.registerReceiver(broadcastReceiver, new IntentFilter());
+
+
+        alarmManager = (AlarmManager) this.context.getSystemService(Context.ALARM_SERVICE);
+
+        if (c.getTimeInMillis() < Calendar.getInstance().getTimeInMillis()) {
             c.add(Calendar.DAY_OF_WEEK, 1);
             //Log.d("DATE day of weeks ", c.get(Calendar.DAY_OF_WEEK)+"");
         }
@@ -62,7 +93,7 @@ public class Alarm {
 
         pendingIntents = new ArrayList<>();
 
-        Intent intent = new Intent(this.context, AlarmBroadcast.class);
+        Intent intent = new Intent(this.context, Alarm.class);
 
 
         Random generator = new Random();
@@ -73,7 +104,7 @@ public class Alarm {
         date.setTime(time);
 
         Log.d("ALARM DATE ", date.toString());
-        Log.d("ALARM REQUESTCODE", requestcode+"");
+        Log.d("ALARM REQUESTCODE", requestcode + "");
 
         intent.putExtra("REQUESTCODE", requestcode);
         intent.putExtra("TIME", time);
@@ -81,7 +112,7 @@ public class Alarm {
         pi = PendingIntent.getBroadcast(this.context, requestcode, intent, 0);
 
 
-        if(days.isEmpty()) {
+        if (days.isEmpty()) {
 
             /*
                 Jeżeli użytkownik nie wybierze dnia ustawiamy najbliższy możliwy dzień
@@ -96,16 +127,15 @@ public class Alarm {
             date.setTime(time);
             Log.d("DATE SET", date.toString());
             */
-        }
-        else {
-            for(int i=0; i<days.size(); i++){
+        } else {
+            for (int i = 0; i < days.size(); i++) {
                 c = Calendar.getInstance();
                 c.set(Calendar.SECOND, 0);
                 c.set(Calendar.DAY_OF_WEEK, days.get(i));
                 c.set(Calendar.HOUR_OF_DAY, hour);
                 c.set(Calendar.MINUTE, minute);
 
-                if(c.getTimeInMillis() < System.currentTimeMillis()) {
+                if (c.getTimeInMillis() < System.currentTimeMillis()) {
                     c.add(Calendar.DAY_OF_YEAR, 7);
                 }
                 time = c.getTimeInMillis();
@@ -119,15 +149,16 @@ public class Alarm {
                 rg = generator.nextInt(100) + i;
 
                 requestcode = requestcode * rg;
-                Log.d("ALARM REQUESTCODE", requestcode+"");
+                Log.d("ALARM REQUESTCODE", requestcode + "");
 
-                intent = new Intent(this.context, AlarmBroadcast.class);
+                intent = new Intent(this.context, Alarm.class);
                 intent.putExtra("REQUESTCODE", requestcode);
                 intent.putExtra("TIME", time);
                 pi = PendingIntent.getBroadcast(this.context, requestcode, intent, 0);
                 pendingIntents.add(pi);
-                if(!repeat) alarmManager.setExact(AlarmManager.RTC_WAKEUP, time, pi);
-                else alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, time, AlarmManager.INTERVAL_DAY*7, pi);
+                if (!repeat) alarmManager.setExact(AlarmManager.RTC_WAKEUP, time, pi);
+                else
+                    alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, time, AlarmManager.INTERVAL_DAY * 7, pi);
             }
         }
 
@@ -144,24 +175,24 @@ public class Alarm {
 
         StringBuilder builder = new StringBuilder();
         builder.append("Start in: ");
-        if(days!=0) builder.append(days).append(" day(s) ");
-        if (hours!=0) builder.append(hours).append(" hour(s) ");
-        if (minutes!=0) builder.append(minutes).append(" minute(s)");
-        if(days==0 && hours==0 && minutes==0) builder.append("less than a minute");
+        if (days != 0) builder.append(days).append(" day(s) ");
+        if (hours != 0) builder.append(hours).append(" hour(s) ");
+        if (minutes != 0) builder.append(minutes).append(" minute(s)");
+        if (days == 0 && hours == 0 && minutes == 0) builder.append("less than a minute");
 
         Toast.makeText(context, builder.toString(), Toast.LENGTH_LONG).show();
 
     }
 
-    public void cancelAlarm(){
-        if(pendingIntents.isEmpty()){
-            if(alarmManager!=null){
+    public void cancelAlarm() {
+        if (pendingIntents.isEmpty()) {
+            if (alarmManager != null) {
                 alarmManager.cancel(pi);
                 Log.d("Alarm", "Cancel");
             }
-        }else {
-            for(int i=0; i<pendingIntents.size(); i++){
-                if(alarmManager!=null){
+        } else {
+            for (int i = 0; i < pendingIntents.size(); i++) {
+                if (alarmManager != null) {
                     alarmManager.cancel(pendingIntents.get(i));
                 }
             }
@@ -170,8 +201,8 @@ public class Alarm {
         isenabled = false;
     }
 
-    public void change(int hour, int minute, ArrayList<Integer> days, boolean repeat){
-        if(alarmManager!=null){
+    public void change(int hour, int minute, ArrayList<Integer> days, boolean repeat) {
+        if (alarmManager != null) {
             cancelAlarm();
             this.hour = hour;
             this.minute = minute;

@@ -25,12 +25,15 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Alarm> alarmsList;
     private Button buttSetAlarm;
     private Context context;
-    private Calendar c;
     private ListView listView;
     private CustomAdapter adapter;
     private boolean bnew = true;
-    private int position;
     private ArrayList<Integer> days;
+
+    final static String alarm_hour = "alarm_hour";
+    final static String alarm_minute = "alarm_hour";
+    final static String alarm_repeat = "alarm_repeat";
+    final static String alarm_days = "alarm_days";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,76 +41,35 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         context = getApplicationContext();
         buttSetAlarm = (Button)findViewById(R.id.button);
-
-
-        c = Calendar.getInstance();
-
-        alarmsList = new ArrayList();
-        days = new ArrayList<Integer>();
-
         listView = (ListView)findViewById(R.id.listview);
+
+        alarmsList = new ArrayList<Alarm>();
+        days = new ArrayList<Integer>();
 
         adapter = new CustomAdapter(this, R.layout.customview, alarmsList);
         listView.setAdapter(adapter);
-
-
-
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                position = i;
-                bnew = false;
-
-                showTimeDialog(alarmsList.get(position).getDays());
-            }
+        listView.setOnItemClickListener((adapterView, view, position, l) -> changeSelectedAlarm(position));
+        listView.setOnItemLongClickListener((adapterView, view, position, l) -> {
+            alarmOptions(position);
+            return true;
         });
-
-        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-
-                position = i;
-                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this, R.style.Theme_AppCompat_Dialog);
-                builder.setTitle("Delete").setMessage("Can you delete alarm?");
-                builder.setPositiveButton("YES!", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        alarmsList.remove(position);
-                        adapter.notifyDataSetChanged();
-                        dialogInterface.cancel();
-                    }
-                }).setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.cancel();
-                    }
-                }).show();
-                return true;
-            }
+        buttSetAlarm.setOnClickListener(view -> {
+            bnew = true;
+            showTimeDialog(null);
         });
-
-        buttSetAlarm.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                bnew = true;
-                showTimeDialog(null);
-            }
-        });
-
-
     }
 
     public class MyHandler extends Handler{
         public void handleMessage(Message msg){
-            timeHour = msg.getData().getInt("time_hour");
-            timeMinute = msg.getData().getInt("time_minute");
-            repeat = msg.getData().getBoolean("repeat", false);
-            days = msg.getData().getIntegerArrayList("array_days");
+            timeHour = msg.getData().getInt(alarm_hour);
+            timeMinute = msg.getData().getInt(alarm_minute);
+            repeat = msg.getData().getBoolean(alarm_repeat, false);
+            days = msg.getData().getIntegerArrayList(alarm_days);
             if(bnew){
                 alarmsList.add(new Alarm(context, alarmsList.size(), timeHour, timeMinute, alarmsList.size()-1, true, days, repeat));
                 alarmsList.get(alarmsList.size()-1).setAlarm();
             }else{
-                alarmsList.get(position).change(timeHour, timeMinute, days, repeat);
+                alarmsList.get(0).change(timeHour, timeMinute, days, repeat);
             }
             adapter.notifyDataSetChanged();
             //Log.d("Alarm msg", msg.toString());
@@ -117,5 +79,20 @@ public class MainActivity extends AppCompatActivity {
     public void showTimeDialog(ArrayList<Integer> days){
         TimeDialog timeDialog = new TimeDialog(new MyHandler(), days);
         timeDialog.show(getSupportFragmentManager(), "timepicker");
+    }
+
+    public void changeSelectedAlarm(int position){
+        showTimeDialog(alarmsList.get(position).getDays());
+    }
+
+    public void alarmOptions(int position){
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this, R.style.Theme_AppCompat_Dialog);
+        builder.setTitle("Delete").setMessage("Can you delete alarm?");
+        builder.setPositiveButton("YES!", (dialogInterface, i) -> {
+            alarmsList.get(position).cancelAlarm();
+            alarmsList.remove(position);
+            adapter.notifyDataSetChanged();
+            dialogInterface.cancel();
+        }).setNegativeButton("No", (dialogInterface, i) -> dialogInterface.cancel()).show();
     }
 }
