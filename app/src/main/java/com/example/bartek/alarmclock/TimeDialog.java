@@ -42,6 +42,7 @@ public class TimeDialog extends AppCompatDialogFragment {
         this.days = days;
     }
 
+
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -56,13 +57,6 @@ public class TimeDialog extends AppCompatDialogFragment {
         msg = new Message();
         if(days==null) days = new ArrayList<>();
 
-        try {
-            Calendar calendar = Calendar.getInstance(Locale.getDefault());
-            hour = calendar.get(Calendar.HOUR_OF_DAY);
-            minute = calendar.get(Calendar.MINUTE);
-        }catch (Exception e){
-            Log.d("Alarm TimePiceker", e.toString());
-        }
 
         builder.setView(view).setTitle("Set time").setNegativeButton("Cancel", (dialogInterface, i) -> {
         }).setPositiveButton("OK", (dialogInterface, i) -> clickOk());

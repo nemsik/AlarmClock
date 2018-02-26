@@ -24,8 +24,8 @@ public class AlarmAlertDialog extends Activity {
 
         AlertDialog.Builder alarmAlertDialog = new AlertDialog.Builder(AlarmAlertDialog.this);
         alarmAlertDialog.setTitle("ALARM!").
-                setNegativeButton("Cancel", (dialogInterface, i) -> finishActivity(0)).
-                setPositiveButton("OK", (dialogInterface, i) -> finishActivity(0));
+                setNegativeButton("Cancel", (dialogInterface, i) -> finish()).
+                setPositiveButton("OK", (dialogInterface, i) -> finish());
         alarmAlertDialog.show();
     }
 }

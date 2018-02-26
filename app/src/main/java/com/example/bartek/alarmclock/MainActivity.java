@@ -27,13 +27,13 @@ public class MainActivity extends AppCompatActivity {
     private CustomAdapter adapter;
     private boolean repeat, newDay = true;
     private ArrayList<Integer> days;
+    private AlarmBroadcast alarmBroadcast;
 
     final static String alarm_hour = "alarm_hour";
     final static String alarm_minute = "alarm_minute";
     final static String alarm_repeat = "alarm_repeat";
     final static String alarm_days = "alarm_days";
     final static String alarm_requestcode = "alarm_requestcode";
-    final static String alarm_date = "alarm_date";
     final static String alarm_time = "alarm_time";
 
     @Override
@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
             newDay = true;
             showTimeDialog(null);
         });
+
     }
 
     public void showTimeDialog(ArrayList<Integer> days){
@@ -73,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void deleteAlarm(int position){
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this, R.style.Theme_AppCompat_Dialog);
-        builder.setTitle("Delete").setMessage("Can you delete alarm?");
+        builder.setTitle("Delete").setMessage("Do you want to delete the alarm?");
         builder.setPositiveButton("YES!", (dialogInterface, i) -> {
             alarmsList.get(position).cancelAlarm();
             alarmsList.remove(position);

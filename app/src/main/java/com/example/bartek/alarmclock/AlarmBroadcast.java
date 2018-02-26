@@ -21,6 +21,7 @@ public class AlarmBroadcast extends BroadcastReceiver {
     private int req;
     private Long time;
     private Date date;
+
     @Override
     public void onReceive(Context context, Intent intent) {
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
@@ -29,11 +30,12 @@ public class AlarmBroadcast extends BroadcastReceiver {
         Toast.makeText(context, "Alarm !!!!!!!!!!", Toast.LENGTH_LONG).show();
 
         req = intent.getIntExtra(MainActivity.alarm_requestcode, -1);
-        time = intent.getLongExtra(MainActivity.alarm_date, -1);
+        time = intent.getLongExtra(MainActivity.alarm_time, -1);
+        Log.d("BROADCAST ", time+"");
         date = new Date();
         date.setTime(time);
         Log.d("ALARM BROADCAST REQ ", ""+req);
-        Log.d("Alarm BROADCAST DATE ", date.toString());
+        Log.d("ALARM BROADCAST DATE ", date.toString());
 
         Intent mintent = new Intent(context, AlarmAlertDialog.class);
         mintent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
