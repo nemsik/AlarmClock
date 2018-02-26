@@ -42,7 +42,6 @@ public class TimeDialog extends AppCompatDialogFragment {
         this.days = days;
     }
 
-
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -56,7 +55,6 @@ public class TimeDialog extends AppCompatDialogFragment {
         b = new Bundle();
         msg = new Message();
         if(days==null) days = new ArrayList<>();
-
 
         builder.setView(view).setTitle("Set time").setNegativeButton("Cancel", (dialogInterface, i) -> {
         }).setPositiveButton("OK", (dialogInterface, i) -> clickOk());

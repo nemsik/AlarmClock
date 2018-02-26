@@ -1,21 +1,15 @@
 package com.example.bartek.alarmclock;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.Toast;
-
 import java.util.ArrayList;
-import java.util.Calendar;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -27,7 +21,6 @@ public class MainActivity extends AppCompatActivity {
     private CustomAdapter adapter;
     private boolean repeat, newDay = true;
     private ArrayList<Integer> days;
-    private AlarmBroadcast alarmBroadcast;
 
     final static String alarm_hour = "alarm_hour";
     final static String alarm_minute = "alarm_minute";
@@ -68,8 +61,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void changeSelectedAlarm(int i){
         position = i;
-        showTimeDialog(alarmsList.get(position).getDays());
         newDay = false;
+        showTimeDialog(alarmsList.get(position).getDays());
     }
 
     public void deleteAlarm(int position){
