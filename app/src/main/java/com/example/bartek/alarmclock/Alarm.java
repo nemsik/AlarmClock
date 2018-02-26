@@ -61,7 +61,7 @@ public class Alarm {
 
         time = c.getTimeInMillis();
 
-        Intent intent = new Intent(this.context, Alarm.class);
+        Intent intent = new Intent(this.context, AlarmBroadcast.class);
 
         requestcode = randomRequestCode(requestcode);
 
@@ -88,7 +88,7 @@ public class Alarm {
                 time = c.getTimeInMillis();
                 requestcode = randomRequestCode(requestcode);
 
-                intent = new Intent(this.context, Alarm.class);
+                intent = new Intent(this.context, AlarmBroadcast.class);
                 intent.putExtra(MainActivity.alarm_requestcode, requestcode);
                 intent.putExtra(MainActivity.alarm_time, time);
 
