@@ -52,6 +52,9 @@ public class TimeDialog extends AppCompatDialogFragment {
         timePicker = (TimePicker)view.findViewById(R.id.timePicker);
         timePicker.setIs24HourView(true);
 
+        hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+        minute = Calendar.getInstance().get(Calendar.MINUTE);
+
         b = new Bundle();
         msg = new Message();
         if(days==null) days = new ArrayList<>();
