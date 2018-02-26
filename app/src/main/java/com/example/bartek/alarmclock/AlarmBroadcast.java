@@ -37,9 +37,8 @@ public class AlarmBroadcast extends BroadcastReceiver {
         Log.d("ALARM BROADCAST REQ ", ""+req);
         Log.d("ALARM BROADCAST DATE ", date.toString());
 
-        Intent mintent = new Intent(context, AlarmAlertDialog.class);
-        mintent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(mintent);
+        context.sendBroadcast(new Intent(MainActivity.alarm_broadcast));
+
         wl.release();
     }
 }

@@ -1,14 +1,21 @@
 package com.example.bartek.alarmclock;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.ListView;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Random;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -28,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
     final static String alarm_days = "alarm_days";
     final static String alarm_requestcode = "alarm_requestcode";
     final static String alarm_time = "alarm_time";
+    final static String alarm_broadcast = "ALARM_INTENT";
+    private final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +60,8 @@ public class MainActivity extends AppCompatActivity {
             newDay = true;
             showTimeDialog(null);
         });
+
+        registerReceiver(broadcastReceiver, new IntentFilter(MainActivity.alarm_broadcast));
 
     }
 
@@ -83,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
             repeat = msg.getData().getBoolean(alarm_repeat, false);
             days = msg.getData().getIntegerArrayList(alarm_days);
             if(newDay){
-                alarmsList.add(new Alarm(context, alarmsList.size(), hour, minute,
+                alarmsList.add(new Alarm(context, hour, minute,
                         alarmsList.size()-1, true, days, repeat));
                 alarmsList.get(alarmsList.size()-1).setAlarm();
             }else{
@@ -91,5 +102,25 @@ public class MainActivity extends AppCompatActivity {
             }
             adapter.notifyDataSetChanged();
         }
+    }
+
+    BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "BROAD onReceive: ");
+            AlertDialog snoozDialog = new AlertDialog.Builder(MainActivity.this).create();
+            snoozDialog.setTitle("ALARM");
+            snoozDialog.setMessage("Wake UP!");
+            snoozDialog.setButton(DialogInterface.BUTTON_POSITIVE, "SNOOZE", (dialogInterface, i) -> setSnooze());
+            snoozDialog.setButton(DialogInterface.BUTTON_NEUTRAL, "Close", (dialogInterface, i) -> finish());
+            snoozDialog.show();
+        }
+    };
+
+    public void setSnooze(){
+        Calendar c = Calendar.getInstance();
+        Random generator = new Random();
+        new Alarm(context, c.get(Calendar.HOUR_OF_DAY),c.get(Calendar.MINUTE)+5,
+                generator.nextInt(1000), true, null, false).setAlarm();
     }
 }

@@ -24,7 +24,7 @@ import java.util.Random;
 
 public class Alarm {
     private Context context;
-    private int requestcode, hour, minute, id;
+    private int requestcode, hour, minute;
     private long time;
     private AlarmManager alarmManager;
     private Calendar c;
@@ -33,7 +33,7 @@ public class Alarm {
     private ArrayList<PendingIntent> pendingIntents;
     private Boolean repeat;
 
-    public Alarm(Context context, int id, int hour, int minute, int requestcode, boolean isenabled, ArrayList<Integer> days, boolean repeat) {
+    public Alarm(Context context, int hour, int minute, int requestcode, boolean isenabled, ArrayList<Integer> days, boolean repeat) {
         this.context = context;
         this.hour = hour;
         this.minute = minute;
@@ -46,7 +46,6 @@ public class Alarm {
         time = c.getTimeInMillis();
         this.days = days;
         this.repeat = repeat;
-        this.id = id;
 
     }
 
@@ -174,10 +173,6 @@ public class Alarm {
 
     public ArrayList<Integer> getDays() {
         return days;
-    }
-
-    public int getId() {
-        return id;
     }
 
     public Boolean getRepeat() {
