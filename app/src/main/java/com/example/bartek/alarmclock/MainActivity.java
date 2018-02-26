@@ -20,13 +20,12 @@ import java.util.Calendar;
 public class MainActivity extends AppCompatActivity {
 
     private int hour, minute, position;
-    private Boolean repeat;
     private ArrayList<Alarm> alarmsList;
     private Button buttSetAlarm;
     private Context context;
     private ListView listView;
     private CustomAdapter adapter;
-    private boolean bnew = true;
+    private boolean repeat, newDay = true;
     private ArrayList<Integer> days;
 
     final static String alarm_hour = "alarm_hour";
@@ -56,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
         buttSetAlarm.setOnClickListener(view -> {
-            bnew = true;
+            newDay = true;
             showTimeDialog(null);
         });
     }
@@ -69,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
     public void changeSelectedAlarm(int i){
         position = i;
         showTimeDialog(alarmsList.get(position).getDays());
-        bnew = false;
+        newDay = false;
     }
 
     public void deleteAlarm(int position){
@@ -89,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
             minute = msg.getData().getInt(alarm_minute);
             repeat = msg.getData().getBoolean(alarm_repeat, false);
             days = msg.getData().getIntegerArrayList(alarm_days);
-            if(bnew){
+            if(newDay){
                 alarmsList.add(new Alarm(context, alarmsList.size(), hour, minute,
                         alarmsList.size()-1, true, days, repeat));
                 alarmsList.get(alarmsList.size()-1).setAlarm();
