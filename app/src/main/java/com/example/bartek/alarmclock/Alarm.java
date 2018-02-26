@@ -100,8 +100,7 @@ public class Alarm {
         }
 
         isenabled = true;
-        long difftime = c.getTimeInMillis() - Calendar.getInstance().getTimeInMillis();
-        remainingTime(difftime);
+        remainingTime(c.getTimeInMillis() - Calendar.getInstance().getTimeInMillis());
     }
 
     public void cancelAlarm() {

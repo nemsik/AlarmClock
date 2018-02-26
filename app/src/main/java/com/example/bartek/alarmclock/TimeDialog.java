@@ -28,13 +28,14 @@ import java.util.Locale;
 public class TimeDialog extends AppCompatDialogFragment {
 
     private TimePicker timePicker;
-    private int timeHour, timeMinute;
+    private int hour, minute;
     private Handler handlerAlarm;
     private Bundle b;
     private Message msg;
     private Button buttondays;
     private final CharSequence[] items = {"Sunday", "Monday","Tuesday","Wednesday","Thursday", "Friday", "Saturday"};
     private ArrayList<Integer> seletedItems;
+    private boolean[] checkedItems;
 
     public TimeDialog(Handler handlerAlarm, ArrayList<Integer> seletedItems) {
         this.handlerAlarm = handlerAlarm;
@@ -57,8 +58,8 @@ public class TimeDialog extends AppCompatDialogFragment {
 
         try {
             Calendar calendar = Calendar.getInstance(Locale.getDefault());
-            timeHour = calendar.get(Calendar.HOUR_OF_DAY);
-            timeMinute = calendar.get(Calendar.MINUTE);
+            hour = calendar.get(Calendar.HOUR_OF_DAY);
+            minute = calendar.get(Calendar.MINUTE);
         }catch (Exception e){
             Log.d("Alarm TimePiceker", e.toString());
         }
@@ -67,8 +68,8 @@ public class TimeDialog extends AppCompatDialogFragment {
         }).setPositiveButton("OK", (dialogInterface, i) -> clickOk());
 
         timePicker.setOnTimeChangedListener((timePicker, i, i1) -> {
-            timeHour = i;
-            timeMinute = i1;
+            hour = i;
+            minute = i1;
         });
 
         buttondays.setOnClickListener(view1 -> chooseDays());
@@ -83,8 +84,8 @@ public class TimeDialog extends AppCompatDialogFragment {
 
     private void clickOk(){
         Collections.sort(seletedItems);
-        b.putInt(MainActivity.alarm_hour, timeHour);
-        b.putInt(MainActivity.alarm_minute, timeMinute);
+        b.putInt(MainActivity.alarm_hour, hour);
+        b.putInt(MainActivity.alarm_minute, minute);
         b.putIntegerArrayList(MainActivity.alarm_days, seletedItems);
         Log.d("ALARM DAYS", seletedItems.toString());
         msg.setData(b);
@@ -95,19 +96,18 @@ public class TimeDialog extends AppCompatDialogFragment {
         AlertDialog dialog = new AlertDialog.Builder(getActivity())
                 .setTitle("Select The Days")
                 .setMultiChoiceItems(items, checkSelectedItems(), (dialog13, indexSelected, isChecked) -> {
-                    if (isChecked) {
-                        seletedItems.add(indexSelected+1);
-                    } else if (seletedItems.contains(indexSelected+1)) {
-                        seletedItems.remove(Integer.valueOf(indexSelected+1));
-                    }
+                    if (isChecked) checkedItems[indexSelected] = true;
+                    else checkedItems[indexSelected] = false;
                 }).setPositiveButton("OK", (dialog1, id) -> {
+                    seletedItems.clear();
+                    for(int i=0; i<checkedItems.length; i++) if(checkedItems[i]) seletedItems.add(i+1);
                 }).setNegativeButton("Cancel", (dialog12, id) -> {
                 }).create();
         dialog.show();
     }
 
     private boolean[] checkSelectedItems(){
-        final boolean[] checkedItems = new boolean[7];
+        checkedItems = new boolean[7];
         for(int i=0; i<7; i++){
             if(seletedItems.indexOf(i+1) !=-1) checkedItems[i] = true;
             else checkedItems[i] = false;
