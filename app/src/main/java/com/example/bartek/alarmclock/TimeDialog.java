@@ -34,12 +34,12 @@ public class TimeDialog extends AppCompatDialogFragment {
     private Message msg;
     private Button buttondays;
     private final CharSequence[] items = {"Sunday", "Monday","Tuesday","Wednesday","Thursday", "Friday", "Saturday"};
-    private ArrayList<Integer> seletedItems;
-    private boolean[] checkedItems;
+    private ArrayList<Integer> days;
+    private boolean[] checkedDays;
 
-    public TimeDialog(Handler handlerAlarm, ArrayList<Integer> seletedItems) {
+    public TimeDialog(Handler handlerAlarm, ArrayList<Integer> days) {
         this.handlerAlarm = handlerAlarm;
-        this.seletedItems = seletedItems;
+        this.days = days;
     }
 
     @Override
@@ -54,7 +54,7 @@ public class TimeDialog extends AppCompatDialogFragment {
 
         b = new Bundle();
         msg = new Message();
-        if(seletedItems==null) seletedItems = new ArrayList<>();
+        if(days==null) days = new ArrayList<>();
 
         try {
             Calendar calendar = Calendar.getInstance(Locale.getDefault());
@@ -83,11 +83,10 @@ public class TimeDialog extends AppCompatDialogFragment {
     }
 
     private void clickOk(){
-        Collections.sort(seletedItems);
+        Collections.sort(days);
         b.putInt(MainActivity.alarm_hour, hour);
         b.putInt(MainActivity.alarm_minute, minute);
-        b.putIntegerArrayList(MainActivity.alarm_days, seletedItems);
-        Log.d("ALARM DAYS", seletedItems.toString());
+        b.putIntegerArrayList(MainActivity.alarm_days, days);
         msg.setData(b);
         handlerAlarm.sendMessage(msg);
     }
@@ -96,22 +95,22 @@ public class TimeDialog extends AppCompatDialogFragment {
         AlertDialog dialog = new AlertDialog.Builder(getActivity())
                 .setTitle("Select The Days")
                 .setMultiChoiceItems(items, checkSelectedItems(), (dialog13, indexSelected, isChecked) -> {
-                    if (isChecked) checkedItems[indexSelected] = true;
-                    else checkedItems[indexSelected] = false;
+                    if (isChecked) checkedDays[indexSelected] = true;
+                    else checkedDays[indexSelected] = false;
                 }).setPositiveButton("OK", (dialog1, id) -> {
-                    seletedItems.clear();
-                    for(int i=0; i<checkedItems.length; i++) if(checkedItems[i]) seletedItems.add(i+1);
+                    days.clear();
+                    for(int i=0; i<checkedDays.length; i++) if(checkedDays[i]) days.add(i+1);
                 }).setNegativeButton("Cancel", (dialog12, id) -> {
                 }).create();
         dialog.show();
     }
 
     private boolean[] checkSelectedItems(){
-        checkedItems = new boolean[7];
+        checkedDays = new boolean[7];
         for(int i=0; i<7; i++){
-            if(seletedItems.indexOf(i+1) !=-1) checkedItems[i] = true;
-            else checkedItems[i] = false;
+            if(days.indexOf(i+1) !=-1) checkedDays[i] = true;
+            else checkedDays[i] = false;
         }
-        return checkedItems;
+        return checkedDays;
     }
 }
