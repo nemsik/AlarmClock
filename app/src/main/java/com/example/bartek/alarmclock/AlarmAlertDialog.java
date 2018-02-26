@@ -17,27 +17,15 @@ import android.view.View;
  */
 
 public class AlarmAlertDialog extends Activity {
-
-
     @Override
     public void onCreate (Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.alarm_dialog_alert);
 
         AlertDialog.Builder alarmAlertDialog = new AlertDialog.Builder(AlarmAlertDialog.this);
-        alarmAlertDialog.setTitle("ALARM!").setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                finishActivity(0);
-
-            }
-        }).setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                finishActivity(0);
-            }
-        });
+        alarmAlertDialog.setTitle("ALARM!").
+                setNegativeButton("Cancel", (dialogInterface, i) -> finishActivity(0)).
+                setPositiveButton("OK", (dialogInterface, i) -> finishActivity(0));
         alarmAlertDialog.show();
     }
 }

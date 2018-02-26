@@ -19,8 +19,7 @@ import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
 
-    private int timeHour, timeMinute;
-    private long time;
+    private int hour, minute, position;
     private Boolean repeat;
     private ArrayList<Alarm> alarmsList;
     private Button buttSetAlarm;
@@ -31,9 +30,12 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Integer> days;
 
     final static String alarm_hour = "alarm_hour";
-    final static String alarm_minute = "alarm_hour";
+    final static String alarm_minute = "alarm_minute";
     final static String alarm_repeat = "alarm_repeat";
     final static String alarm_days = "alarm_days";
+    final static String alarm_requestcode = "alarm_requestcode";
+    final static String alarm_date = "alarm_date";
+    final static String alarm_time = "alarm_time";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
         listView.setAdapter(adapter);
         listView.setOnItemClickListener((adapterView, view, position, l) -> changeSelectedAlarm(position));
         listView.setOnItemLongClickListener((adapterView, view, position, l) -> {
-            alarmOptions(position);
+            deleteAlarm(position);
             return true;
         });
         buttSetAlarm.setOnClickListener(view -> {
@@ -59,33 +61,18 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public class MyHandler extends Handler{
-        public void handleMessage(Message msg){
-            timeHour = msg.getData().getInt(alarm_hour);
-            timeMinute = msg.getData().getInt(alarm_minute);
-            repeat = msg.getData().getBoolean(alarm_repeat, false);
-            days = msg.getData().getIntegerArrayList(alarm_days);
-            if(bnew){
-                alarmsList.add(new Alarm(context, alarmsList.size(), timeHour, timeMinute, alarmsList.size()-1, true, days, repeat));
-                alarmsList.get(alarmsList.size()-1).setAlarm();
-            }else{
-                alarmsList.get(0).change(timeHour, timeMinute, days, repeat);
-            }
-            adapter.notifyDataSetChanged();
-            //Log.d("Alarm msg", msg.toString());
-        }
-    }
-
     public void showTimeDialog(ArrayList<Integer> days){
-        TimeDialog timeDialog = new TimeDialog(new MyHandler(), days);
+        TimeDialog timeDialog = new TimeDialog(new TimeDialogHandler(), days);
         timeDialog.show(getSupportFragmentManager(), "timepicker");
     }
 
-    public void changeSelectedAlarm(int position){
+    public void changeSelectedAlarm(int i){
+        position = i;
         showTimeDialog(alarmsList.get(position).getDays());
+        bnew = false;
     }
 
-    public void alarmOptions(int position){
+    public void deleteAlarm(int position){
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this, R.style.Theme_AppCompat_Dialog);
         builder.setTitle("Delete").setMessage("Can you delete alarm?");
         builder.setPositiveButton("YES!", (dialogInterface, i) -> {
@@ -94,5 +81,22 @@ public class MainActivity extends AppCompatActivity {
             adapter.notifyDataSetChanged();
             dialogInterface.cancel();
         }).setNegativeButton("No", (dialogInterface, i) -> dialogInterface.cancel()).show();
+    }
+
+    public class TimeDialogHandler extends Handler{
+        public void handleMessage(Message msg){
+            hour = msg.getData().getInt(alarm_hour);
+            minute = msg.getData().getInt(alarm_minute);
+            repeat = msg.getData().getBoolean(alarm_repeat, false);
+            days = msg.getData().getIntegerArrayList(alarm_days);
+            if(bnew){
+                alarmsList.add(new Alarm(context, alarmsList.size(), hour, minute,
+                        alarmsList.size()-1, true, days, repeat));
+                alarmsList.get(alarmsList.size()-1).setAlarm();
+            }else{
+                alarmsList.get(position).change(hour, minute, days, repeat);
+            }
+            adapter.notifyDataSetChanged();
+        }
     }
 }

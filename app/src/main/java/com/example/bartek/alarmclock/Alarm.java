@@ -27,15 +27,11 @@ public class Alarm {
     private int requestcode, hour, minute, id;
     private long time;
     private AlarmManager alarmManager;
-    private PendingIntent pi;
     private Calendar c;
     private boolean isenabled;
     private ArrayList<Integer> days;
     private ArrayList<PendingIntent> pendingIntents;
-    private Date date;
     private Boolean repeat;
-    private long difftime;
-    private BroadcastReceiver broadcastReceiver;
 
     public Alarm(Context context, int id, int hour, int minute, int requestcode, boolean isenabled, ArrayList<Integer> days, boolean repeat) {
         this.context = context;
@@ -55,78 +51,29 @@ public class Alarm {
     }
 
     public void setAlarm() {
-        broadcastReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-                PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "wake_up");
-                wl.acquire();
-
-
-                Toast.makeText(context, "Alarm !!!!!!!!!!", Toast.LENGTH_LONG).show(); // For example
-
-                int req = intent.getIntExtra("REQUESTCODE", -1);
-                long time2 = intent.getLongExtra("TIME", -1);
-                date = new Date();
-                date.setTime(time2);
-                Log.d("ALARM BROADCAST REQ ", "" + req);
-                Log.d("Alarm BROADCAST DATE ", date.toString());
-
-                Intent mintent = new Intent(context, AlarmAlertDialog.class);
-                mintent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(mintent);
-                wl.release();
-            }
-        };
-
-        context.registerReceiver(broadcastReceiver, new IntentFilter());
-
-
-        alarmManager = (AlarmManager) this.context.getSystemService(Context.ALARM_SERVICE);
+        if(alarmManager==null) alarmManager = (AlarmManager) this.context.getSystemService(Context.ALARM_SERVICE);
+        if(pendingIntents==null) pendingIntents = new ArrayList<>();
+        if(days==null) days=new ArrayList<>();
 
         if (c.getTimeInMillis() < Calendar.getInstance().getTimeInMillis()) {
             c.add(Calendar.DAY_OF_WEEK, 1);
-            //Log.d("DATE day of weeks ", c.get(Calendar.DAY_OF_WEEK)+"");
         }
 
         time = c.getTimeInMillis();
 
-        pendingIntents = new ArrayList<>();
-
         Intent intent = new Intent(this.context, Alarm.class);
 
+        requestcode = randomRequestCode(requestcode);
 
-        Random generator = new Random();
-        int rg = generator.nextInt(100) + requestcode;
-        requestcode = requestcode * rg;
+        intent.putExtra(MainActivity.alarm_requestcode, requestcode);
+        intent.putExtra(MainActivity.alarm_time, time);
 
-        date = new Date();
-        date.setTime(time);
-
-        Log.d("ALARM DATE ", date.toString());
-        Log.d("ALARM REQUESTCODE", requestcode + "");
-
-        intent.putExtra("REQUESTCODE", requestcode);
-        intent.putExtra("TIME", time);
-
-        pi = PendingIntent.getBroadcast(this.context, requestcode, intent, 0);
-
+        pendingIntents.add(PendingIntent.getBroadcast(this.context, requestcode, intent, 0));
 
         if (days.isEmpty()) {
-
-            /*
-                Jeżeli użytkownik nie wybierze dnia ustawiamy najbliższy możliwy dzień
-            */
             days.add(c.get(Calendar.DAY_OF_WEEK));
-
             time = c.getTimeInMillis();
-            alarmManager.setExact(AlarmManager.RTC_WAKEUP, time, pi);
-
-            /*
-            date = new Date();
-            date.setTime(time);
-            Log.d("DATE SET", date.toString());
-            */
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, time, pendingIntents.get(pendingIntents.size()-1));
         } else {
             for (int i = 0; i < days.size(); i++) {
                 c = Calendar.getInstance();
@@ -139,33 +86,56 @@ public class Alarm {
                     c.add(Calendar.DAY_OF_YEAR, 7);
                 }
                 time = c.getTimeInMillis();
-
-
-                date = new Date();
-                date.setTime(time);
-                Log.d("ALARM DATE ", date.toString());
-
-                generator = new Random();
-                rg = generator.nextInt(100) + i;
-
-                requestcode = requestcode * rg;
-                Log.d("ALARM REQUESTCODE", requestcode + "");
+                requestcode = randomRequestCode(requestcode);
 
                 intent = new Intent(this.context, Alarm.class);
-                intent.putExtra("REQUESTCODE", requestcode);
-                intent.putExtra("TIME", time);
-                pi = PendingIntent.getBroadcast(this.context, requestcode, intent, 0);
-                pendingIntents.add(pi);
-                if (!repeat) alarmManager.setExact(AlarmManager.RTC_WAKEUP, time, pi);
+                intent.putExtra(MainActivity.alarm_requestcode, requestcode);
+                intent.putExtra(MainActivity.alarm_time, time);
+
+                pendingIntents.add(PendingIntent.getBroadcast(this.context, requestcode, intent, 0));
+                if (!repeat) alarmManager.setExact(AlarmManager.RTC_WAKEUP, time, pendingIntents.get(pendingIntents.size()-1));
                 else
-                    alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, time, AlarmManager.INTERVAL_DAY * 7, pi);
+                    alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, time, AlarmManager.INTERVAL_DAY * 7, pendingIntents.get(pendingIntents.size()-1));
             }
         }
 
         isenabled = true;
-        Log.d("DATE DAY", getDays().toString());
+        long difftime = c.getTimeInMillis() - Calendar.getInstance().getTimeInMillis();
+        remainingTime(difftime);
+    }
 
-        difftime = c.getTimeInMillis() - Calendar.getInstance().getTimeInMillis();
+    public void cancelAlarm() {
+            for (int i = 0; i < pendingIntents.size(); i++) {
+                if (alarmManager != null) {
+                    alarmManager.cancel(pendingIntents.get(i));
+                }
+            }
+        isenabled = false;
+        pendingIntents.clear();
+    }
+
+    public void change(int hour, int minute, ArrayList<Integer> days, boolean repeat) {
+        if (alarmManager != null) {
+            cancelAlarm();
+            this.hour = hour;
+            this.minute = minute;
+            this.days = days;
+            this.repeat = repeat;
+            c = Calendar.getInstance();
+            c.set(Calendar.HOUR_OF_DAY, hour);
+            c.set(Calendar.MINUTE, minute);
+            setAlarm();
+        }
+    }
+
+    private int randomRequestCode(int requestcode){
+        Random generator = new Random();
+        int rg = generator.nextInt(100) + requestcode;
+        requestcode = requestcode * rg;
+        return requestcode;
+    }
+
+    private void remainingTime(long difftime){
         long seconds = difftime / 1000;
         long minutes = seconds / 60;
         long hours = minutes / 60;
@@ -181,40 +151,6 @@ public class Alarm {
         if (days == 0 && hours == 0 && minutes == 0) builder.append("less than a minute");
 
         Toast.makeText(context, builder.toString(), Toast.LENGTH_LONG).show();
-
-    }
-
-    public void cancelAlarm() {
-        if (pendingIntents.isEmpty()) {
-            if (alarmManager != null) {
-                alarmManager.cancel(pi);
-                Log.d("Alarm", "Cancel");
-            }
-        } else {
-            for (int i = 0; i < pendingIntents.size(); i++) {
-                if (alarmManager != null) {
-                    alarmManager.cancel(pendingIntents.get(i));
-                }
-            }
-        }
-
-        isenabled = false;
-    }
-
-    public void change(int hour, int minute, ArrayList<Integer> days, boolean repeat) {
-        if (alarmManager != null) {
-            cancelAlarm();
-            this.hour = hour;
-            this.minute = minute;
-            this.days = days;
-            this.repeat = repeat;
-
-            c = Calendar.getInstance();
-            c.set(Calendar.HOUR_OF_DAY, hour);
-            c.set(Calendar.MINUTE, minute);
-
-            setAlarm();
-        }
     }
 
     public long getTime() {

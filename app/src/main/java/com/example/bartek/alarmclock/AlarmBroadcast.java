@@ -26,26 +26,14 @@ public class AlarmBroadcast extends BroadcastReceiver {
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "wake_up");
         wl.acquire();
+        Toast.makeText(context, "Alarm !!!!!!!!!!", Toast.LENGTH_LONG).show();
 
-
-        Toast.makeText(context, "Alarm !!!!!!!!!!", Toast.LENGTH_LONG).show(); // For example
-
-        req = intent.getIntExtra("REQUESTCODE", -1);
-        time = intent.getLongExtra("TIME", -1);
+        req = intent.getIntExtra(MainActivity.alarm_requestcode, -1);
+        time = intent.getLongExtra(MainActivity.alarm_date, -1);
         date = new Date();
         date.setTime(time);
         Log.d("ALARM BROADCAST REQ ", ""+req);
         Log.d("Alarm BROADCAST DATE ", date.toString());
-
-
-        /*
-        W jaki sposób wyświetlić ten dialog?
-
-
-        AlarmAlertDialog alarmAlertDialog = new AlarmAlertDialog();
-        alarmAlertDialog.show();
-
-        */
 
         Intent mintent = new Intent(context, AlarmAlertDialog.class);
         mintent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

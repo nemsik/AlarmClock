@@ -46,98 +46,72 @@ public class TimeDialog extends AppCompatDialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.time_layout, null);
+        buttondays = (Button)view.findViewById(R.id.buttondays);
+        final CheckBox checkRepeat = (CheckBox)view.findViewById(R.id.checkBoxRepeat);
+        timePicker = (TimePicker)view.findViewById(R.id.timePicker);
+        timePicker.setIs24HourView(true);
+
         b = new Bundle();
         msg = new Message();
-
         if(seletedItems==null) seletedItems = new ArrayList<>();
-
-        final CheckBox checkRepeat = (CheckBox)view.findViewById(R.id.checkBoxRepeat);
 
         try {
             Calendar calendar = Calendar.getInstance(Locale.getDefault());
             timeHour = calendar.get(Calendar.HOUR_OF_DAY);
             timeMinute = calendar.get(Calendar.MINUTE);
-
-           // Log.d(timeHour+" ", timeMinute+"");
         }catch (Exception e){
             Log.d("Alarm TimePiceker", e.toString());
         }
 
+        builder.setView(view).setTitle("Set time").setNegativeButton("Cancel", (dialogInterface, i) -> {
+        }).setPositiveButton("OK", (dialogInterface, i) -> clickOk());
 
-        builder.setView(view).setTitle("Set time").setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-
-            }
-        }).setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                b.putInt("time_hour", timeHour);
-                b.putInt("time_minute", timeMinute);
-                Collections.sort(seletedItems);
-                b.putIntegerArrayList("array_days", seletedItems);
-                Log.d("ALARM DAYS", seletedItems.toString());
-                msg.setData(b);
-                handlerAlarm.sendMessage(msg);
-            }
+        timePicker.setOnTimeChangedListener((timePicker, i, i1) -> {
+            timeHour = i;
+            timeMinute = i1;
         });
 
-        timePicker = (TimePicker)view.findViewById(R.id.timePicker);
-        timePicker.setIs24HourView(true);
-        timePicker.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
-            @Override
-            public void onTimeChanged(TimePicker timePicker, int i, int i1) {
-                //Log.d("Alarm TIMEPICKER", "changed");
-                timeHour = i;
-                timeMinute = i1;
-            }
-        });
+        buttondays.setOnClickListener(view1 -> chooseDays());
 
+        checkRepeat.setOnClickListener(view12 -> {
+            if(checkRepeat.isChecked()){
+                b.putBoolean("repeat", true);
+            }else b.putBoolean("repeat", false);
+        });
+        return builder.create();
+    }
+
+    private void clickOk(){
+        Collections.sort(seletedItems);
+        b.putInt(MainActivity.alarm_hour, timeHour);
+        b.putInt(MainActivity.alarm_minute, timeMinute);
+        b.putIntegerArrayList(MainActivity.alarm_days, seletedItems);
+        Log.d("ALARM DAYS", seletedItems.toString());
+        msg.setData(b);
+        handlerAlarm.sendMessage(msg);
+    }
+
+    private void chooseDays(){
+        AlertDialog dialog = new AlertDialog.Builder(getActivity())
+                .setTitle("Select The Days")
+                .setMultiChoiceItems(items, checkSelectedItems(), (dialog13, indexSelected, isChecked) -> {
+                    if (isChecked) {
+                        seletedItems.add(indexSelected+1);
+                    } else if (seletedItems.contains(indexSelected+1)) {
+                        seletedItems.remove(Integer.valueOf(indexSelected+1));
+                    }
+                }).setPositiveButton("OK", (dialog1, id) -> {
+                }).setNegativeButton("Cancel", (dialog12, id) -> {
+                }).create();
+        dialog.show();
+    }
+
+    private boolean[] checkSelectedItems(){
         final boolean[] checkedItems = new boolean[7];
         for(int i=0; i<7; i++){
             if(seletedItems.indexOf(i+1) !=-1) checkedItems[i] = true;
             else checkedItems[i] = false;
         }
-
-        buttondays = (Button)view.findViewById(R.id.buttondays);
-        buttondays.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AlertDialog dialog = new AlertDialog.Builder(getActivity())
-                        .setTitle("Select The Days")
-                        .setMultiChoiceItems(items, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int indexSelected, boolean isChecked) {
-                                if (isChecked) {
-                                    seletedItems.add(indexSelected+1);
-                                } else if (seletedItems.contains(indexSelected)) {
-                                    seletedItems.remove(Integer.valueOf(indexSelected+1));
-                                }
-                            }
-                        }).setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int id) {
-
-                            }
-                        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int id) {
-
-                            }
-                        }).create();
-                dialog.show();
-
-            }
-        });
-
-        checkRepeat.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(checkRepeat.isChecked()){
-                    b.putBoolean("repeat", true);
-                }else b.putBoolean("repeat", false);
-            }
-        });
-        return builder.create();
+        return checkedItems;
     }
 }
